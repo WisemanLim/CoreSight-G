@@ -1,0 +1,40 @@
+{
+  "agent_type": "monitoring",
+  "version": "1.0.0",
+  "display_name": "GPU 모니터링 Agent",
+  "description": "Prometheus 에서 GPU utilization/VRAM/온도/전력/XID/ECC 를 조회·해석하는 관제 Agent입니다",
+  "capabilities": [
+    {
+      "verb": "gpu_monitoring",
+      "domain": "observability.gpu",
+      "description": "GPU 상태 스냅샷·활성 알람·PromQL 조회 (read-only)",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "tool_name": {"type": "string", "enum": ["get_gpu_snapshot", "get_active_alerts", "query_promql"]},
+          "arguments": {"type": "object"}
+        },
+        "required": ["tool_name"]
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "result": {"type": "object"}
+        }
+      },
+      "qos": {
+        "max_latency_ms": 10000,
+        "supports_async": false,
+        "supports_streaming": false
+      }
+    }
+  ],
+  "governance": {
+    "data_classification": "internal",
+    "human_approval_required": false,
+    "audit_level": "standard"
+  },
+  "required_env": [],
+  "optional_env": ["PROMETHEUS_URL"],
+  "min_platform_version": "2.0.0"
+}

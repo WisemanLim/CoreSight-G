@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Observability Dashboard Comparison Matrix</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root, [data-theme="light"] {
+      --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+      --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+      --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+      --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem; --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem; --space-12: 3rem; --space-16: 4rem;
+      --color-bg: #f7f6f2; --color-surface: #f9f8f5; --color-surface-2: #fbfbf9; --color-surface-offset: #f3f0ec; --color-border: #d4d1ca; --color-divider: #dcd9d5;
+      --color-text: #28251d; --color-text-muted: #7a7974; --color-text-faint: #bab9b4; --color-text-inverse: #f9f8f4;
+      --color-primary: #01696f; --color-primary-hover: #0c4e54; --color-blue: #006494; --color-purple: #7a39bb; --color-success: #437a22; --color-warning: #964219; --color-error: #a12c7b;
+      --radius-sm: 0.375rem; --radius-md: 0.5rem; --radius-lg: 0.75rem; --radius-xl: 1rem; --radius-full: 9999px;
+      --shadow-sm: 0 1px 2px rgba(40,37,29,.06); --shadow-md: 0 4px 12px rgba(40,37,29,.08); --shadow-lg: 0 12px 32px rgba(40,37,29,.12);
+      --font-body: 'Inter', system-ui, sans-serif; --font-mono: 'IBM Plex Mono', monospace;
+    }
+    [data-theme="dark"] {
+      --color-bg: #171614; --color-surface: #1c1b19; --color-surface-2: #201f1d; --color-surface-offset: #1d1c1a; --color-border: #393836; --color-divider: #262523;
+      --color-text: #cdccca; --color-text-muted: #979692; --color-text-faint: #6d6c68; --color-text-inverse: #2b2a28;
+      --color-primary: #4f98a3; --color-primary-hover: #227f8b; --color-blue: #5591c7; --color-purple: #a86fdf; --color-success: #6daa45; --color-warning: #bb653b; --color-error: #d163a7;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.2); --shadow-md: 0 4px 12px rgba(0,0,0,.3); --shadow-lg: 0 12px 32px rgba(0,0,0,.4);
+    }
+    *,*::before,*::after{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;font-family:var(--font-body);background:var(--color-bg);color:var(--color-text);line-height:1.6}
+    img,svg{display:block;max-width:100%;height:auto} table{border-collapse:collapse;width:100%} a{color:var(--color-primary)} button{font:inherit}
+    .page{display:grid;grid-template-columns:300px 1fr;min-height:100dvh}
+    .sidebar{position:sticky;top:0;height:100dvh;overflow:auto;padding:var(--space-8);background:var(--color-surface);border-right:1px solid var(--color-border)}
+    .logo{display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-8)}
+    .logo svg{width:34px;height:34px;color:var(--color-primary)}
+    .logo strong{font-size:var(--text-sm);letter-spacing:.03em;text-transform:uppercase}
+    .nav{display:grid;gap:var(--space-2)} .nav a{text-decoration:none;padding:.7rem .85rem;border-radius:var(--radius-md);color:var(--color-text-muted)} .nav a:hover,.nav a:focus-visible{background:var(--color-surface-offset);color:var(--color-text)}
+    .sidebar-card{margin-top:var(--space-8);padding:var(--space-5);border:1px solid var(--color-border);border-radius:var(--radius-lg);background:var(--color-surface-2);box-shadow:var(--shadow-sm)}
+    .sidebar-card h3{margin:0 0 var(--space-3);font-size:var(--text-sm)} .sidebar-card p{margin:0;color:var(--color-text-muted);font-size:var(--text-xs)}
+    .main{min-width:0}.topbar{position:sticky;top:0;z-index:10;display:flex;justify-content:space-between;align-items:center;padding:var(--space-4) var(--space-8);background:color-mix(in oklab, var(--color-bg) 86%, transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--color-divider)}
+    .theme-toggle{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:var(--radius-full);border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text)}
+    .content{padding:var(--space-8);display:grid;gap:var(--space-8)}
+    .hero{display:grid;grid-template-columns:1.3fr .9fr;gap:var(--space-8);align-items:stretch}
+    .panel{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-xl);box-shadow:var(--shadow-sm)}
+    .hero-card{padding:var(--space-8)} .eyebrow{font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.16em;color:var(--color-primary);font-weight:700}
+    h1{margin:.4rem 0 1rem;font-size:var(--text-xl);line-height:1.05} .lead{color:var(--color-text-muted);max-width:60ch}
+    .badge-row{display:flex;flex-wrap:wrap;gap:var(--space-3);margin-top:var(--space-6)} .badge{display:inline-flex;align-items:center;gap:.5rem;padding:.55rem .85rem;background:var(--color-surface-offset);border:1px solid var(--color-border);border-radius:var(--radius-full);font-size:var(--text-xs)}
+    .kpis{display:grid;gap:var(--space-4);padding:var(--space-6)} .kpi{padding:var(--space-4);border-radius:var(--radius-lg);background:var(--color-surface-offset);border:1px solid var(--color-border)} .kpi strong{display:block;font-size:1.7rem;font-variant-numeric:tabular-nums lining-nums} .kpi span{font-size:var(--text-xs);color:var(--color-text-muted)}
+    .section{display:grid;gap:var(--space-4)} .section h2{margin:0;font-size:var(--text-lg)} .section p{margin:0;color:var(--color-text-muted)}
+    .matrix-wrap{overflow:auto}.matrix{min-width:980px}.matrix th,.matrix td{padding:1rem;vertical-align:top;border-bottom:1px solid var(--color-divider);text-align:left}.matrix th{font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-muted);background:var(--color-surface-offset);position:sticky;top:0}.matrix td:first-child,.matrix th:first-child{position:sticky;left:0;background:var(--color-surface);z-index:1}
+    .score{display:inline-flex;align-items:center;gap:.5rem;padding:.35rem .65rem;border-radius:var(--radius-full);font-size:var(--text-xs);font-weight:700}.s-high{background:rgba(67,122,34,.12);color:var(--color-success)} .s-mid{background:rgba(150,66,25,.12);color:var(--color-warning)} .s-low{background:rgba(122,57,187,.12);color:var(--color-purple)}
+    .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-4)} .card{padding:var(--space-5)} .card h3{margin:0 0 .6rem;font-size:var(--text-base)} .mini{font-size:var(--text-xs);color:var(--color-text-muted)}
+    .checklist{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-4)} .check{padding:var(--space-5)} .check ul{margin:0;padding-left:1.1rem} .check li{margin:.35rem 0;color:var(--color-text-muted)}
+    .diagram{padding:var(--space-6)} .diagram svg{width:100%;min-height:520px} .caption{font-size:var(--text-sm);color:var(--color-text-muted)}
+    .foot{padding:var(--space-6);font-size:var(--text-xs);color:var(--color-text-muted)} .foot a{text-underline-offset:3px}
+    .mono{font-family:var(--font-mono);font-size:var(--text-xs)}
+    @media (max-width: 1100px){.page{grid-template-columns:1fr}.sidebar{display:none}.hero,.cards,.checklist{grid-template-columns:1fr}.content,.topbar{padding:var(--space-4)}.matrix td:first-child,.matrix th:first-child{position:static}}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <aside class="sidebar">
+      <div class="logo" aria-label="Obs Matrix logo">
+        <svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><rect x="7" y="7" width="50" height="50" rx="14" stroke="currentColor" stroke-width="4"/><path d="M18 40c5-13 11-19 18-19s10 5 10 11-4 12-11 12c-6 0-11-4-17-4" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div><strong>Obs Matrix</strong><div class="mini">Dashboard UI comparison + GPU pipeline</div></div>
+      </div>
+      <nav class="nav" aria-label="Sections">
+        <a href="#matrix">Comparison matrix</a>
+        <a href="#components">UI components</a>
+        <a href="#filters">Filtering models</a>
+        <a href="#layout">Layout efficiency</a>
+        <a href="#pipeline">GPU collection pipeline</a>
+      </nav>
+      <div class="sidebar-card">
+        <h3>Source anchors</h3>
+        <p>Datadog dashboard docs and getting-started pages describe dashboard creation and visualization workflows [web:310][web:312]. Dynatrace supports dashboard filters and management-zone scoping for environment views [web:309][web:313][web:315]. Prometheus + Grafana GPU monitoring typically uses NVIDIA DCGM Exporter, Prometheus scraping, and Grafana dashboards [web:47][web:48][web:59][web:107][web:136][web:316].</p>
+      </div>
+    </aside>
+    <main class="main">
+      <div class="topbar">
+        <div class="mono">Observability Dashboard Comparison Matrix</div>
+        <button class="theme-toggle" data-theme-toggle aria-label="Switch theme">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+      </div>
+      <div class="content">
+        <section class="hero">
+          <article class="panel hero-card">
+            <div class="eyebrow">Platform UX benchmarking</div>
+            <h1>UI components, filtering models, and layout efficiency across Datadog, Dynatrace, and Prometheus + Grafana</h1>
+            <p class="lead">Datadog is strongest when teams want fast dashboard assembly and cross-signal drilldown in a unified SaaS workflow [web:310][web:312]. Dynatrace is strongest when operators need environment scoping, dashboard filtering, and entity-centric root-cause context [web:309][web:313][web:315]. Prometheus with Grafana is strongest when teams want flexible, metric-centric composition and GPU-specific dashboards built from DCGM data pipelines [web:19][web:47][web:107].</p>
+            <div class="badge-row">
+              <div class="badge">Datadog: fast SaaS dashboards [web:310]</div>
+              <div class="badge">Dynatrace: scoped operations [web:309]</div>
+              <div class="badge">Grafana: flexible metric canvas [web:107]</div>
+            </div>
+          </article>
+          <aside class="panel kpis">
+            <div class="kpi"><span>Best for filtering depth</span><strong>Dynatrace</strong><span>Management zones + dashboard filters [web:309][web:313]</span></div>
+            <div class="kpi"><span>Best for GPU specialization</span><strong>Grafana</strong><span>Official and community DCGM dashboards [web:48][web:59][web:107]</span></div>
+            <div class="kpi"><span>Best for operator onboarding</span><strong>Datadog</strong><span>Guided dashboard workflows and unified views [web:310][web:312]</span></div>
+          </aside>
+        </section>
+
+        <section id="matrix" class="section">
+          <h2>Comparison matrix</h2>
+          <p>The matrix below evaluates UI components, filtering behavior, and layout efficiency from an operator workflow perspective rather than vendor marketing language [web:310][web:313][web:107].</p>
+          <div class="panel matrix-wrap">
+            <table class="matrix">
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th>Datadog</th>
+                  <th>Dynatrace</th>
+                  <th>Prometheus + Grafana</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Primary UI model</strong></td>
+                  <td>Widget-driven dashboards with prebuilt visualizations and cross-product navigation [web:310][web:312]</td>
+                  <td>Entity-aware dashboards tied to environment scope and management zones [web:309][web:313][web:315]</td>
+                  <td>Metric-first dashboard composition, variables, panels, and datasource-driven layout [web:107][web:275]</td>
+                </tr>
+                <tr>
+                  <td><strong>Core components</strong></td>
+                  <td>Timeseries, toplists, heatmaps, host maps, SLO widgets, logs and traces panels [web:168][web:310]</td>
+                  <td>Dashboard tiles, entity lists, Smartscape-linked views, problem cards, DQL-backed panels [web:234][web:313]</td>
+                  <td>Timeseries, gauge, stat, table, bar gauge, state timeline, templated GPU panels [web:107][web:301]</td>
+                </tr>
+                <tr>
+                  <td><strong>Filtering depth</strong></td>
+                  <td><span class="score s-mid">High</span> tag-based and time-based workflow is strong, but environment partitioning is less central than in Dynatrace [web:310][web:312]</td>
+                  <td><span class="score s-high">Very high</span> dashboard filter bar plus management zones persist scope and time frame [web:309][web:313][web:315]</td>
+                  <td><span class="score s-high">Very high</span> template variables, PromQL labels, instance/GPU dropdowns enable precise slices [web:107][web:48]</td>
+                </tr>
+                <tr>
+                  <td><strong>Layout efficiency</strong></td>
+                  <td><span class="score s-high">High</span> fast scan for operators, strong top-level overview widgets [web:310]</td>
+                  <td><span class="score s-mid">High but denser</span> richer context, heavier UI, best for expert operators [web:234][web:315]</td>
+                  <td><span class="score s-mid">Variable</span> highly efficient when curated well, inconsistent if dashboards are unmanaged [web:107][web:275]</td>
+                </tr>
+                <tr>
+                  <td><strong>Drilldown flow</strong></td>
+                  <td>Metric → logs → traces → service views in one platform [web:239][web:241]</td>
+                  <td>Problem → entity scope → cause chain → related telemetry [web:234][web:235]</td>
+                  <td>Panel → query → label filters → linked dashboards/alerts [web:19][web:107]</td>
+                </tr>
+                <tr>
+                  <td><strong>GPU dashboard readiness</strong></td>
+                  <td>Possible through integrations, but less native as a GPU-first dashboard culture [web:184]</td>
+                  <td>Increasingly relevant with AI observability, but GPU dashboard patterns are less community-standardized [web:242]</td>
+                  <td>Strongest path with DCGM Exporter, Prometheus scraping, Grafana templates, MIG-aware dashboards [web:47][web:59][web:107][web:301]</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="components" class="section">
+          <h2>UI components</h2>
+          <p>Operator efficiency depends on whether a platform exposes the right components for overview, comparison, exception handling, and deep analysis [web:310][web:313][web:107].</p>
+          <div class="cards">
+            <article class="panel card">
+              <h3>Datadog</h3>
+              <p>Strongest components are KPI widgets, SLO views, infrastructure maps, and unified views that pull logs and traces into the same workflow [web:168][web:310].</p>
+            </article>
+            <article class="panel card">
+              <h3>Dynatrace</h3>
+              <p>Strongest components are environment-aware tiles, problem cards, scoped dashboard filters, and topology-linked operational panels [web:309][web:313][web:315].</p>
+            </article>
+            <article class="panel card">
+              <h3>Grafana</h3>
+              <p>Strongest components are panel variety, variables, stat and table composition, and reusable GPU templates that visualize VRAM, power, temperature, and utilization [web:107][web:301].</p>
+            </article>
+          </div>
+        </section>
+
+        <section id="filters" class="section">
+          <h2>Filtering models</h2>
+          <p>Filtering quality determines whether the same dashboard can serve fleet overview, team scope, host-level triage, and GPU-level troubleshooting without duplication [web:309][web:313][web:107].</p>
+          <div class="checklist">
+            <article class="panel check">
+              <h3>Datadog</h3>
+              <ul>
+                <li>Dashboard construction and dashboard lists are documented as core workflows [web:304][web:307].</li>
+                <li>Best suited to tag-based filtering and unified observability navigation [web:310][web:312].</li>
+                <li>Strong for operator teams who standardize service tags and environments [web:310].</li>
+              </ul>
+            </article>
+            <article class="panel check">
+              <h3>Dynatrace</h3>
+              <ul>
+                <li>Management zones act as permission-aware operational scope filters [web:309].</li>
+                <li>Dynamic dashboard filters appear in the dashboard filter bar [web:313].</li>
+                <li>Selected management zone and time frame can persist with dashboards [web:315].</li>
+              </ul>
+            </article>
+            <article class="panel check">
+              <h3>Prometheus + Grafana</h3>
+              <ul>
+                <li>Filtering is driven by PromQL labels and dashboard variables [web:107].</li>
+                <li>GPU dashboards commonly expose instance and gpu dropdown selectors [web:107].</li>
+                <li>Most flexible model, but it relies on disciplined metric labels and naming [web:19][web:107].</li>
+              </ul>
+            </article>
+          </div>
+        </section>
+
+        <section id="layout" class="section">
+          <h2>Layout efficiency</h2>
+          <p>Layout efficiency is measured here by how quickly an operator can move from overview to cause isolation with minimal panel hunting [web:310][web:315][web:107].</p>
+          <div class="cards">
+            <article class="panel card">
+              <h3>Fastest scan</h3>
+              <p>Datadog tends to be the easiest for high-level monitoring because its widget system supports dense executive and operator summaries without much custom engineering [web:310][web:312].</p>
+            </article>
+            <article class="panel card">
+              <h3>Best scoped operations</h3>
+              <p>Dynatrace excels when organizations need each team to stay inside its own scoped environment while preserving shared platform governance [web:309][web:315].</p>
+            </article>
+            <article class="panel card">
+              <h3>Best custom efficiency</h3>
+              <p>Grafana becomes the most efficient option when teams design a clear hierarchy from fleet overview to node view to GPU drilldown, especially for AI clusters [web:107][web:301].</p>
+            </article>
+          </div>
+        </section>
+
+        <section id="pipeline" class="section">
+          <h2>Prometheus + Grafana GPU metric pipeline</h2>
+          <p>NVIDIA documents DCGM Exporter as the Prometheus-facing telemetry surface for GPU metrics [web:47]. NVIDIA and Grafana resources describe a pipeline in which DCGM Exporter exposes GPU metrics, Prometheus scrapes them, and Grafana visualizes them through imported dashboards or custom panels [web:48][web:59][web:107][web:136][web:316].</p>
+          <div class="panel diagram">
+            <svg viewBox="0 0 1240 560" role="img" aria-label="Prometheus and Grafana GPU metric pipeline diagram">
+              <defs>
+                <linearGradient id="g1" x1="0" x2="1"><stop offset="0%" stop-color="var(--color-primary)"/><stop offset="100%" stop-color="var(--color-blue)"/></linearGradient>
+                <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="var(--color-text)"/></marker>
+              </defs>
+              <rect x="24" y="30" width="1192" height="500" rx="28" fill="var(--color-surface-2)" stroke="var(--color-border)"/>
+              <text x="54" y="72" font-size="24" font-weight="700" fill="var(--color-text)">GPU Metric Collection and Visualization Flow</text>
+              <text x="54" y="101" font-size="14" fill="var(--color-text-muted)">Reference pattern: GPU node telemetry -&gt; DCGM Exporter -&gt; Prometheus scrape -&gt; Grafana dashboard [web:47][web:59][web:107]</text>
+
+              <rect x="60" y="140" width="220" height="130" rx="20" fill="var(--color-surface)" stroke="var(--color-border)"/>
+              <text x="84" y="176" font-size="22" font-weight="700" fill="var(--color-text)">GPU Nodes</text>
+              <text x="84" y="208" font-size="14" fill="var(--color-text-muted)">NVIDIA GPUs, drivers,</text>
+              <text x="84" y="230" font-size="14" fill="var(--color-text-muted)">CUDA workload, MIG state</text>
+              <text x="84" y="252" font-size="14" fill="var(--color-text-muted)">Power, VRAM, temp, ECC</text>
+
+              <rect x="340" y="140" width="250" height="130" rx="20" fill="var(--color-surface)" stroke="var(--color-border)"/>
+              <text x="364" y="176" font-size="22" font-weight="700" fill="var(--color-text)">DCGM Exporter</text>
+              <text x="364" y="208" font-size="14" fill="var(--color-text-muted)">Collects DCGM metrics</text>
+              <text x="364" y="230" font-size="14" fill="var(--color-text-muted)">Exposes /metrics endpoint</text>
+              <text x="364" y="252" font-size="14" fill="var(--color-text-muted)">Runs on nodes / DaemonSet</text>
+
+              <rect x="650" y="140" width="250" height="130" rx="20" fill="var(--color-surface)" stroke="var(--color-border)"/>
+              <text x="674" y="176" font-size="22" font-weight="700" fill="var(--color-text)">Prometheus</text>
+              <text x="674" y="208" font-size="14" fill="var(--color-text-muted)">Scrapes dcgm-exporter</text>
+              <text x="674" y="230" font-size="14" fill="var(--color-text-muted)">Stores time-series data</text>
+              <text x="674" y="252" font-size="14" fill="var(--color-text-muted)">Rules, alerts, retention</text>
+
+              <rect x="960" y="140" width="220" height="130" rx="20" fill="var(--color-surface)" stroke="var(--color-border)"/>
+              <text x="984" y="176" font-size="22" font-weight="700" fill="var(--color-text)">Grafana</text>
+              <text x="984" y="208" font-size="14" fill="var(--color-text-muted)">Dashboards and variables</text>
+              <text x="984" y="230" font-size="14" fill="var(--color-text-muted)">Fleet -&gt; node -&gt; GPU view</text>
+              <text x="984" y="252" font-size="14" fill="var(--color-text-muted)">Operator drilldown</text>
+
+              <path d="M280 205 H340" stroke="var(--color-text)" stroke-width="3" marker-end="url(#arrow)"/>
+              <path d="M590 205 H650" stroke="var(--color-text)" stroke-width="3" marker-end="url(#arrow)"/>
+              <path d="M900 205 H960" stroke="var(--color-text)" stroke-width="3" marker-end="url(#arrow)"/>
+
+              <rect x="190" y="350" width="300" height="120" rx="20" fill="rgba(1,105,111,.08)" stroke="var(--color-border)"/>
+              <text x="216" y="384" font-size="20" font-weight="700" fill="var(--color-text)">Kubernetes option</text>
+              <text x="216" y="412" font-size="14" fill="var(--color-text-muted)">DaemonSet deployment</text>
+              <text x="216" y="434" font-size="14" fill="var(--color-text-muted)">ServiceMonitor adds scrape target</text>
+              <text x="216" y="456" font-size="14" fill="var(--color-text-muted)">Common with kube-prometheus-stack</text>
+
+              <rect x="525" y="350" width="300" height="120" rx="20" fill="rgba(0,100,148,.08)" stroke="var(--color-border)"/>
+              <text x="550" y="384" font-size="20" font-weight="700" fill="var(--color-text)">Key metrics</text>
+              <text x="550" y="412" font-size="14" fill="var(--color-text-muted)">Utilization, VRAM, temp, fan, power</text>
+              <text x="550" y="434" font-size="14" fill="var(--color-text-muted)">ECC, XID, clocks, MIG-specific labels</text>
+              <text x="550" y="456" font-size="14" fill="var(--color-text-muted)">Historical view beyond nvidia-smi</text>
+
+              <rect x="860" y="350" width="300" height="120" rx="20" fill="rgba(122,57,187,.08)" stroke="var(--color-border)"/>
+              <text x="886" y="384" font-size="20" font-weight="700" fill="var(--color-text)">Dashboard hierarchy</text>
+              <text x="886" y="412" font-size="14" fill="var(--color-text-muted)">Cluster summary</text>
+              <text x="886" y="434" font-size="14" fill="var(--color-text-muted)">Node comparison</text>
+              <text x="886" y="456" font-size="14" fill="var(--color-text-muted)">Per-GPU drilldown and alerts</text>
+
+              <path d="M430 270 C430 310 340 320 340 350" stroke="var(--color-text-muted)" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>
+              <path d="M775 270 C775 310 675 320 675 350" stroke="var(--color-text-muted)" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>
+              <path d="M1070 270 C1070 310 1010 320 1010 350" stroke="var(--color-text-muted)" stroke-width="2.5" fill="none" marker-end="url(#arrow)"/>
+            </svg>
+          </div>
+          <p class="caption">The most common implementation path is DCGM Exporter on GPU nodes, Prometheus scrape configuration or ServiceMonitor discovery, and Grafana dashboard import with variables such as <span class="mono">instance</span> and <span class="mono">gpu</span> [web:48][web:59][web:107][web:316].</p>
+        </section>
+
+        <footer class="panel foot">
+          This page synthesizes publicly documented platform behavior from Datadog dashboard documentation [web:304][web:307][web:310][web:312], Dynatrace filtering and management-zone behavior [web:309][web:313][web:315], and NVIDIA/Grafana GPU monitoring references [web:47][web:48][web:59][web:107][web:136][web:301][web:316].
+        </footer>
+      </div>
+    </main>
+  </div>
+  <script>
+    (function(){const btn=document.querySelector('[data-theme-toggle]');const root=document.documentElement;let theme=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';root.setAttribute('data-theme',theme);function render(){btn.innerHTML=theme==='dark'?'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>':'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';btn.setAttribute('aria-label','Switch to '+(theme==='dark'?'light':'dark')+' mode');root.setAttribute('data-theme',theme)} render(); btn.addEventListener('click',()=>{theme=theme==='dark'?'light':'dark';render();});})();
+  </script>
+</body>
+</html>

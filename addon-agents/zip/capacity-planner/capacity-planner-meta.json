@@ -1,0 +1,40 @@
+{
+  "agent_type": "monitoring",
+  "version": "1.0.0",
+  "display_name": "용량 계획 Agent",
+  "description": "저활용 GPU 탐지, 효율 리포트, 카디널리티·저장 비용 거버넌스를 제공하는 관제 Agent입니다",
+  "capabilities": [
+    {
+      "verb": "capacity_planning",
+      "domain": "observability.capacity",
+      "description": "저활용 GPU·효율 리포트·카디널리티 요약 조회 (read-only)",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "tool_name": {"type": "string", "enum": ["get_underutilized_gpus", "get_efficiency_report", "get_cardinality_summary"]},
+          "arguments": {"type": "object"}
+        },
+        "required": ["tool_name"]
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "result": {"type": "object"}
+        }
+      },
+      "qos": {
+        "max_latency_ms": 15000,
+        "supports_async": false,
+        "supports_streaming": false
+      }
+    }
+  ],
+  "governance": {
+    "data_classification": "internal",
+    "human_approval_required": false,
+    "audit_level": "standard"
+  },
+  "required_env": [],
+  "optional_env": ["PROMETHEUS_URL"],
+  "min_platform_version": "2.0.0"
+}

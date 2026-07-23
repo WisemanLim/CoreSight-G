@@ -1,0 +1,21 @@
+FROM python:3.12-slim
+WORKDIR /app
+RUN pip install --no-cache-dir uv
+
+# 필요한 파일만 복사 (단일 Agent 독립 실행)
+COPY pyproject.toml ./
+RUN uv sync || true
+COPY app/agents/ ./app/agents/
+COPY app/tools/ ./app/tools/
+COPY app/services/ ./app/services/
+COPY app/core/ ./app/core/
+COPY standalone/standalone_app.py ./
+
+ARG AGENT_KEY=example
+ARG AGENT_PORT=8001
+ENV AGENT_STANDALONE=true \
+    AGENT_KEY=${AGENT_KEY} \
+    AGENT_PORT=${AGENT_PORT}
+
+EXPOSE ${AGENT_PORT}
+CMD ["sh", "-c", "uv run uvicorn standalone_app:app --host 0.0.0.0 --port ${AGENT_PORT}"]

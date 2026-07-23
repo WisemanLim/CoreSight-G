@@ -1,0 +1,159 @@
+..............FFFFF.F...F............................................... [ 82%]
+...............                                                          [100%]
+=================================== FAILURES ===================================
+__________________________ test_t6_list_agent_config ___________________________
+
+client = <httpx.AsyncClient object at 0x1096e4e20>
+admin_token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsInJvbGUiOiJzdXBlcnZpc29yIiwidXNlcm5hbWUiOiJhZG1pbiIsImV4cCI6MTc4MjQzNDg4NywianRpIjoiMTM1ODJlZjMtMTNkYi00OGMyLWFlMzYtNDA3NjQ0M2Y5NDBjIn0.MEq-7ytYnastGB778lF5xnftjzPoLPhkYmXUu1zuWFk'
+
+    @pytest.mark.asyncio
+    async def test_t6_list_agent_config(client: AsyncClient, admin_token: str):
+        """T6: Agent Config 목록 — example 포함."""
+        resp = await client.get("/api/agent-config/", headers={"Authorization": f"Bearer {admin_token}"})
+        assert resp.status_code == 200
+        agents = resp.json()["agents"]
+>       assert any(a["agent_key"] == "example" for a in agents)
+E       assert False
+E        +  where False = any(<generator object test_t6_list_agent_config.<locals>.<genexpr> at 0x109764450>)
+
+test/impl/3/test_phase3.py:154: AssertionError
+_________________________ test_t7_patch_agent_disable __________________________
+
+client = <httpx.AsyncClient object at 0x1096c6510>
+admin_token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsInJvbGUiOiJzdXBlcnZpc29yIiwidXNlcm5hbWUiOiJhZG1pbiIsImV4cCI6MTc4MjQzNDg4NywianRpIjoiNzQ5YTc0N2EtOTA1OC00ZDA2LThiMGQtZTZhNDc0ZGQ2OWMxIn0.T38qucjdTbfyPU6xs8OjnzHNzW4oF__OwXreaJmbLMU'
+
+    @pytest.mark.asyncio
+    async def test_t7_patch_agent_disable(client: AsyncClient, admin_token: str):
+        """T7: example Agent 비활성화 → 200."""
+        resp = await client.patch(
+            "/api/agent-config/example",
+            json={"is_enabled": False},
+            headers={"Authorization": f"Bearer {admin_token}"},
+        )
+>       assert resp.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+test/impl/3/test_phase3.py:165: AssertionError
+__________________________ test_t8_get_agent_disabled __________________________
+
+client = <httpx.AsyncClient object at 0x1097ad6d0>
+admin_token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsInJvbGUiOiJzdXBlcnZpc29yIiwidXNlcm5hbWUiOiJhZG1pbiIsImV4cCI6MTc4MjQzNDg4OCwianRpIjoiYjVkZWQ4ZjMtZTIxNy00NmVhLTkwNzEtMDVkYWVhYTllYjViIn0.aqPovRUEK34mUqNQtjLynINxijFk1EUVwqzBc3-3REE'
+
+    @pytest.mark.asyncio
+    async def test_t8_get_agent_disabled(client: AsyncClient, admin_token: str):
+        """T8: 비활성화된 example 조회 → is_enabled=0."""
+        await client.patch(
+            "/api/agent-config/example",
+            json={"is_enabled": False},
+            headers={"Authorization": f"Bearer {admin_token}"},
+        )
+        resp = await client.get(
+            "/api/agent-config/example",
+            headers={"Authorization": f"Bearer {admin_token}"},
+        )
+>       assert resp.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+test/impl/3/test_phase3.py:180: AssertionError
+_________________________ test_t9_patch_agent_reenable _________________________
+
+client = <httpx.AsyncClient object at 0x1096c6510>
+admin_token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsInJvbGUiOiJzdXBlcnZpc29yIiwidXNlcm5hbWUiOiJhZG1pbiIsImV4cCI6MTc4MjQzNDg4OCwianRpIjoiNTAyMGRkYzYtZDFhYy00MTk5LWI0YTQtNDc4ZDFlMTIyNTk0In0.p91Z2SrYOIuxUr5a6SegLizcBaF2t-IvHiERMz7tNy0'
+
+    @pytest.mark.asyncio
+    async def test_t9_patch_agent_reenable(client: AsyncClient, admin_token: str):
+        """T9: example Agent 재활성화 → 200."""
+        await client.patch(
+            "/api/agent-config/example",
+            json={"is_enabled": False},
+            headers={"Authorization": f"Bearer {admin_token}"},
+        )
+        resp = await client.patch(
+            "/api/agent-config/example",
+            json={"is_enabled": True},
+            headers={"Authorization": f"Bearer {admin_token}"},
+        )
+>       assert resp.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+test/impl/3/test_phase3.py:197: AssertionError
+__________________________ test_t10_list_addons_empty __________________________
+
+client = <httpx.AsyncClient object at 0x1094ea690>
+admin_token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsInJvbGUiOiJzdXBlcnZpc29yIiwidXNlcm5hbWUiOiJhZG1pbiIsImV4cCI6MTc4MjQzNDg4OCwianRpIjoiZDE4MDhhMjEtMmE4NC00YWY4LThlOTctODU2NWFjMTMyMjAwIn0.C0WfCA4BTavJj7gbRHz-tEPscSvIXIFZ9h_RiWuTvMQ'
+
+    @pytest.mark.asyncio
+    async def test_t10_list_addons_empty(client: AsyncClient, admin_token: str):
+        """T10: 초기 addon 목록 — 빈 배열."""
+        resp = await client.get("/api/addon-agents/", headers={"Authorization": f"Bearer {admin_token}"})
+        assert resp.status_code == 200
+>       assert resp.json()["addons"] == []
+E       AssertionError: assert [{'agent_key'...app': 1, ...}] == []
+E         
+E         Left contains one more item: {'agent_key': 'board', 'agent_name': 'Example Agent', 'api_prefix': '/api/addon/board', 'has_app': 1, ...}
+E         Use -v to get more diff
+
+test/impl/3/test_phase3.py:213: AssertionError
+______________________ test_t12_list_addons_after_upload _______________________
+
+client = <httpx.AsyncClient object at 0x1097ae2d0>
+admin_token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsInJvbGUiOiJzdXBlcnZpc29yIiwidXNlcm5hbWUiOiJhZG1pbiIsImV4cCI6MTc4MjQzNDg4OCwianRpIjoiMTEyZTU2MjEtZDg5My00YmQzLTg1OTgtNGUwNTNiNjU0N2EyIn0.hW-pJ5zYwPk2DMm2icrLdNyFCMveOpgAfNsAPxfVuwc'
+
+    @pytest.mark.asyncio
+    async def test_t12_list_addons_after_upload(client: AsyncClient, admin_token: str):
+        """T12: 업로드 후 addon 목록 — 1건."""
+        await client.post(
+            "/api/addon-agents/upload",
+            files={"file": ("ExampleAddon.zip", _make_example_zip(), "application/zip")},
+            headers={"Authorization": f"Bearer {admin_token}"},
+        )
+        resp = await client.get("/api/addon-agents/", headers={"Authorization": f"Bearer {admin_token}"})
+        assert resp.status_code == 200
+>       assert len(resp.json()["addons"]) == 1
+E       AssertionError: assert 2 == 1
+E        +  where 2 = len([{'agent_key': 'board', 'agent_name': 'Example Agent', 'api_prefix': '/api/addon/board', 'has_app': 1, ...}, {'agent_key': 'exampleaddon', 'agent_name': 'ExampleAddon', 'api_prefix': '/api/addon/exampleaddon', 'has_app': 1, ...}])
+
+test/impl/3/test_phase3.py:240: AssertionError
+______________________ test_t16_list_addons_after_delete _______________________
+
+client = <httpx.AsyncClient object at 0x1097aea50>
+admin_token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsInJvbGUiOiJzdXBlcnZpc29yIiwidXNlcm5hbWUiOiJhZG1pbiIsImV4cCI6MTc4MjQzNDg4OSwianRpIjoiNjY4NmVmNzMtNmM3Yy00ZWM4LWFlN2QtYzg2NjhkNDU5MDg0In0._MNLwp2SP35NrwwAZ8NzpX0lszUQTEqx-Z6HiBlODRw'
+
+    @pytest.mark.asyncio
+    async def test_t16_list_addons_after_delete(client: AsyncClient, admin_token: str):
+        """T16: 삭제 후 addon 목록 — 빈 배열."""
+        await client.post(
+            "/api/addon-agents/upload",
+            files={"file": ("ExampleAddon.zip", _make_example_zip(), "application/zip")},
+            headers={"Authorization": f"Bearer {admin_token}"},
+        )
+        await client.delete(
+            "/api/addon-agents/exampleaddon",
+            headers={"Authorization": f"Bearer {admin_token}"},
+        )
+        resp = await client.get("/api/addon-agents/", headers={"Authorization": f"Bearer {admin_token}"})
+>       assert resp.json()["addons"] == []
+E       AssertionError: assert [{'agent_key'...app': 1, ...}] == []
+E         
+E         Left contains one more item: {'agent_key': 'board', 'agent_name': 'Example Agent', 'api_prefix': '/api/addon/board', 'has_app': 1, ...}
+E         Use -v to get more diff
+
+test/impl/3/test_phase3.py:306: AssertionError
+=============================== warnings summary ===============================
+test/impl/5/test_phase5.py::test_t2_mcp_tools_list
+  /Users/wise/Developer/wise-project/Observability-4incGPU/.venv/lib/python3.13/site-packages/fastapi/openapi/utils.py:252: UserWarning: Duplicate Operation ID list_items_api_addon_exampleaddon_items_get for function list_items at /Users/wise/Developer/wise-project/Observability-4incGPU/addon-agents/deployed/exampleaddon/ExampleAddon-app.py
+    warnings.warn(message, stacklevel=1)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED test/impl/3/test_phase3.py::test_t6_list_agent_config - assert False
+FAILED test/impl/3/test_phase3.py::test_t7_patch_agent_disable - assert 404 =...
+FAILED test/impl/3/test_phase3.py::test_t8_get_agent_disabled - assert 404 ==...
+FAILED test/impl/3/test_phase3.py::test_t9_patch_agent_reenable - assert 404 ...
+FAILED test/impl/3/test_phase3.py::test_t10_list_addons_empty - AssertionErro...
+FAILED test/impl/3/test_phase3.py::test_t12_list_addons_after_upload - Assert...
+FAILED test/impl/3/test_phase3.py::test_t16_list_addons_after_delete - Assert...
+7 failed, 80 passed, 1 warning in 21.10s

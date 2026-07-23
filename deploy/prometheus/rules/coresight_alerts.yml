@@ -1,0 +1,89 @@
+# CoreSight-G 필수 알람 규칙 — PRD §3 P0 (XID 즉시, ECC 증가, RAID degraded, 과열, VRAM 장기 고점, exporter 미수집)
+groups:
+  - name: coresight-gpu
+    rules:
+      - alert: GPUXidError
+        expr: DCGM_FI_DEV_XID_ERRORS > 0
+        for: 0m
+        labels: { severity: critical, layer: gpu }
+        annotations:
+          summary: "GPU {{ $labels.gpu }}@{{ $labels.Hostname }} XID 오류 발생"
+      - alert: GPUEccDbeIncrease
+        expr: increase(DCGM_FI_DEV_ECC_DBE_VOL_TOTAL[10m]) > 0
+        labels: { severity: critical, layer: gpu }
+        annotations:
+          summary: "GPU {{ $labels.gpu }}@{{ $labels.Hostname }} ECC double-bit 오류 증가"
+      - alert: GPUOverTemperature
+        expr: DCGM_FI_DEV_GPU_TEMP > 85
+        for: 2m
+        labels: { severity: warning, layer: gpu }
+        annotations:
+          summary: "GPU {{ $labels.gpu }}@{{ $labels.Hostname }} 과열 ({{ $value }}°C)"
+      - alert: GPUThrottling
+        expr: DCGM_FI_DEV_CLOCK_THROTTLE_REASONS > 0
+        for: 2m
+        labels: { severity: warning, layer: gpu }
+        annotations:
+          summary: "GPU {{ $labels.gpu }}@{{ $labels.Hostname }} 클럭 throttle 지속 (원인 코드 {{ $value }})"
+      - alert: GPUMemoryHigh
+        expr: DCGM_FI_DEV_FB_USED / DCGM_FI_DEV_FB_TOTAL > 0.9
+        for: 10m
+        labels: { severity: warning, layer: gpu }
+        annotations:
+          summary: "GPU {{ $labels.gpu }}@{{ $labels.Hostname }} VRAM 90% 초과 지속"
+
+  - name: coresight-hardware
+    rules:
+      - alert: RAIDDegraded
+        expr: hw_raid_degraded > 0
+        for: 0m
+        labels: { severity: critical, layer: hardware }
+        annotations:
+          summary: "{{ $labels.Hostname }} RAID degraded ({{ $labels.controller }})"
+      - alert: SMARTUnhealthy
+        expr: hw_smart_healthy == 0
+        for: 0m
+        labels: { severity: critical, layer: storage }
+        annotations:
+          summary: "{{ $labels.Hostname }} 디스크 {{ $labels.device }} SMART 이상"
+      - alert: DiskLatencyHigh
+        expr: hw_disk_read_latency_ms > 50
+        for: 5m
+        labels: { severity: warning, layer: storage }
+        annotations:
+          summary: "{{ $labels.Hostname }} 디스크 {{ $labels.device }} 읽기 지연 {{ $value }}ms 지속"
+      - alert: PSUFailure
+        expr: hw_psu_status == 0
+        for: 0m
+        labels: { severity: critical, layer: hardware }
+        annotations:
+          summary: "{{ $labels.Hostname }} PSU 장애 ({{ $labels.psu }})"
+      - alert: FanSpeedLow
+        expr: hw_fan_speed_rpm < 1000
+        for: 2m
+        labels: { severity: critical, layer: hardware }
+        annotations:
+          summary: "{{ $labels.Hostname }} 팬 {{ $labels.fan }} 저속 ({{ $value }} RPM) — 냉각 점검"
+      - alert: VoltageOutOfRange
+        expr: hw_voltage_volts{rail="12V"} < 11.4 or hw_voltage_volts{rail="12V"} > 12.6
+        for: 1m
+        labels: { severity: critical, layer: hardware }
+        annotations:
+          summary: "{{ $labels.Hostname }} {{ $labels.rail }} 전압 이상 ({{ $value }}V)"
+      - alert: NICErrorsIncreasing
+        expr: increase(hw_nic_errors_total[10m]) > 0
+        labels: { severity: warning, layer: network }
+        annotations:
+          summary: "{{ $labels.Hostname }} {{ $labels.nic }} 인터페이스 오류 증가"
+      - alert: NICLinkDown
+        expr: hw_nic_link_up == 0
+        for: 1m
+        labels: { severity: critical, layer: network }
+        annotations:
+          summary: "{{ $labels.Hostname }} {{ $labels.nic }} 링크 다운"
+      - alert: ExporterDown
+        expr: up == 0
+        for: 1m
+        labels: { severity: critical, layer: platform }
+        annotations:
+          summary: "{{ $labels.job }} exporter 미수집 (수집 파이프라인 점검 필요)"

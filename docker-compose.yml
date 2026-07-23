@@ -1,0 +1,153 @@
+# coresight-g — python-fastapi (wise-dev-standard / python-fastapi)
+# 도메인 오버레이: ict-saas (KSIC J)
+# 참조: SmartHaccp-MultiAgent docker-compose.yml
+#
+# 포트 매핑은 .env.* 의 *_PORT 변수로 제어 (make *-all 시 --env-file 자동 전달)
+# 기본값: BACKEND_PORT=8100, FRONTEND_PORT=4100, POSTGRES_PORT=5432,
+#          REDIS_PORT=6379, OLLAMA_PORT=11434
+services:
+  # ── 인프라 (profiles 없음 → make up 시 항상 기동) ─────────────────────────
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app}
+      POSTGRES_DB: ${POSTGRES_DB:-app_db}
+      TZ: Asia/Seoul
+    ports: ["${POSTGRES_PORT:-5432}:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./sql/pg:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-app}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: redis:7.4-alpine
+    ports: ["${REDIS_PORT:-6379}:6379"]
+
+  # Ollama — 로컬 LLM 폴백 (Claude API 장애 시 자동 전환, F3)
+  # 포트: OLLAMA_PORT (기본 11434). 네이티브 Ollama 실행 중이면 make *-all 이 자동 스킵
+  ollama:
+    image: ollama/ollama:latest
+    ports: ["${OLLAMA_PORT:-11434}:11434"]
+    volumes:
+      - ollama-data:/root/.ollama
+    environment:
+      - OLLAMA_KEEP_ALIVE=-1
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 20s
+
+  # ── 관측 데이터 계층 (PRD §3 P0 — 메트릭 수집) ────────────────────────────
+  # Prometheus — GPU/HW 메트릭 TSDB + 알람 규칙 평가
+  prometheus:
+    image: prom/prometheus:v3.9.1
+    ports: ["${PROMETHEUS_PORT:-9090}:9090"]
+    volumes:
+      - ./deploy/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./deploy/prometheus/rules:/etc/prometheus/rules:ro
+      - prometheus-data:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=15d   # PRD §5 고해상도 단기 보존
+    depends_on:
+      - gpu-mock-exporter
+
+  # Alertmanager — 알람 라우팅·중복제거 → 백엔드 webhook (PRD §3 P0 알림 채널)
+  alertmanager:
+    image: prom/alertmanager:v0.28.1
+    ports: ["${ALERTMANAGER_PORT:-9093}:9093"]
+    volumes:
+      - ./deploy/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # local: 호스트 pm2 백엔드로 webhook 전달
+
+  # Jaeger — 트레이스 수집·조회 (PRD §3 P1, OTLP). 자체 수집 파이프라인 관측용
+  jaeger:
+    image: jaegertracing/all-in-one:1.62.0
+    ports:
+      - "${JAEGER_UI_PORT:-16686}:16686"   # UI + HTTP API
+      - "${OTLP_HTTP_PORT:-4318}:4318"     # OTLP http 수신
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+
+  # Loki — 로그 수집·검색 (PRD §3 P1). 운영: Promtail/Alloy 가 실 노드 로그 수집
+  loki:
+    image: grafana/loki:3.4.2
+    ports: ["${LOKI_PORT:-3100}:3100"]
+    volumes:
+      - ./deploy/loki/loki-config.yml:/etc/loki/local-config.yaml:ro
+      - loki-data:/loki
+    command: ["-config.file=/etc/loki/local-config.yaml"]
+
+  # Mock 로그 생성기 — 로컬 개발용 (syslog/dmesg/BMC 스타일 로그를 Loki 로 push)
+  log-generator:
+    image: python:3.12-alpine
+    volumes:
+      - ./scripts/mock_log_generator.py:/generator.py:ro
+    command: ["python", "/generator.py"]
+    environment:
+      - LOKI_URL=http://loki:3100
+      - MOCK_ANOMALY=${MOCK_ANOMALY:-0}
+    depends_on:
+      - loki
+
+  # Mock GPU/HW exporter — 로컬 개발용 (실 GPU 없는 환경, DCGM 메트릭 시뮬레이션)
+  # 운영: 이 서비스 제거 후 실제 DCGM Exporter / node_exporter 를 prometheus.yml 에 등록
+  gpu-mock-exporter:
+    image: python:3.12-alpine
+    volumes:
+      - ./scripts/mock_gpu_exporter.py:/exporter.py:ro
+    command: ["python", "/exporter.py"]
+    environment:
+      - MOCK_ANOMALY=${MOCK_ANOMALY:-0}
+    ports: ["${MOCK_EXPORTER_PORT:-9400}:9400"]
+
+  # ── 앱 서비스 (profiles:[app] → make up 에서 제외, make build/dev 로 기동) ─
+  api:
+    profiles: ["app"]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: [".env.${ENV:-dev}"]
+    environment:
+      # 컨테이너 내부 서비스 주소 — 호스트 포트 매핑과 무관하게 내부 포트 사용
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-app}@postgres:5432/${POSTGRES_DB:-app_db}
+      - REDIS_URL=redis://redis:6379
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - PROMETHEUS_URL=http://prometheus:9090
+      - LOKI_URL=http://loki:3100
+      # MCP URL 외부 노출 호스트 — 호스트 IP 또는 도메인 명시 (Docker/NAT 환경 필수)
+      - MCP_HOST=${MCP_HOST:-}
+    ports: ["${BACKEND_PORT:-8100}:8000"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      ollama:
+        condition: service_started
+
+  # ── 프론트엔드 (profiles:[web] → prod 이미지 빌드용) ──────────────────────
+  web:
+    profiles: ["web"]
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: "http://localhost:${BACKEND_PORT:-8100}"
+    ports: ["${FRONTEND_PORT:-4100}:80"]
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
+  ollama-data:
+  prometheus-data:
+  loki-data:

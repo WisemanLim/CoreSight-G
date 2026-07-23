@@ -1,0 +1,40 @@
+{
+  "agent_type": "monitoring",
+  "version": "1.0.0",
+  "display_name": "GPU 프로파일링 Agent",
+  "description": "SM occupancy/Tensor pipe/DRAM bandwidth/throttle/PCIe 등 GPU 고급 지표를 조회·분석하는 관제 Agent입니다",
+  "capabilities": [
+    {
+      "verb": "gpu_profiling",
+      "domain": "observability.gpu.advanced",
+      "description": "GPU 고급 프로파일링 지표·throttle 목록·PromQL 조회 (read-only)",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "tool_name": {"type": "string", "enum": ["get_gpu_profile", "get_throttled_gpus", "query_promql"]},
+          "arguments": {"type": "object"}
+        },
+        "required": ["tool_name"]
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "result": {"type": "object"}
+        }
+      },
+      "qos": {
+        "max_latency_ms": 10000,
+        "supports_async": false,
+        "supports_streaming": false
+      }
+    }
+  ],
+  "governance": {
+    "data_classification": "internal",
+    "human_approval_required": false,
+    "audit_level": "standard"
+  },
+  "required_env": [],
+  "optional_env": ["PROMETHEUS_URL"],
+  "min_platform_version": "2.0.0"
+}

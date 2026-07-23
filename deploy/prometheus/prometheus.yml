@@ -1,0 +1,22 @@
+# CoreSight-G — Prometheus 설정 (local/dev)
+# scrape 주기 15s: PRD §5 "1순위 메트릭 15s~30s 주기" 기준
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - /etc/prometheus/rules/*.yml
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ["alertmanager:9093"]
+
+scrape_configs:
+  # 로컬 개발: mock exporter (GPU 4장 + HW 지표 시뮬레이션)
+  # 운영 전환 시 실제 DCGM Exporter(:9400) / node_exporter(:9100) / ipmi_exporter 로 교체
+  - job_name: dcgm
+    static_configs:
+      - targets: ["gpu-mock-exporter:9400"]
+        labels:
+          node: gpu-node-01

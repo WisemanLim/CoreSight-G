@@ -1,0 +1,41 @@
+{
+  "agent_type": "rag",
+  "version": "1.0.0",
+  "display_name": "RAG/Knowledge Agent",
+  "description": "문서를 임베딩하고 벡터 검색으로 근거를 수집하는 RAG Agent입니다",
+  "capabilities": [
+    {
+      "verb": "retrieve",
+      "domain": "knowledge.documents",
+      "description": "업로드된 문서에서 관련 내용을 검색하고 출처와 함께 답변합니다",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "question": {"type": "string"},
+          "top_k": {"type": "integer", "default": 3}
+        },
+        "required": ["question"]
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "answer": {"type": "string"},
+          "sources": {"type": "array"}
+        }
+      },
+      "qos": {
+        "max_latency_ms": 10000,
+        "supports_async": false,
+        "supports_streaming": true
+      }
+    }
+  ],
+  "governance": {
+    "data_classification": "internal",
+    "human_approval_required": false,
+    "audit_level": "standard"
+  },
+  "required_env": [],
+  "optional_env": ["ANTHROPIC_API_KEY", "OPENAI_API_KEY"],
+  "min_platform_version": "2.0.0"
+}

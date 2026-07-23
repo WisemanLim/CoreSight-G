@@ -1,0 +1,40 @@
+{
+  "agent_type": "monitoring",
+  "version": "1.0.0",
+  "display_name": "로그 분석 Agent",
+  "description": "Loki 에서 시스템/dmesg/BMC 로그를 검색하고 이상 패턴을 분석하는 관제 Agent입니다",
+  "capabilities": [
+    {
+      "verb": "log_analysis",
+      "domain": "observability.logs",
+      "description": "로그 검색(search_logs)·최근 오류 조회(recent_errors) (read-only)",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "tool_name": {"type": "string", "enum": ["search_logs", "recent_errors"]},
+          "arguments": {"type": "object"}
+        },
+        "required": ["tool_name"]
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "result": {"type": "object"}
+        }
+      },
+      "qos": {
+        "max_latency_ms": 10000,
+        "supports_async": false,
+        "supports_streaming": false
+      }
+    }
+  ],
+  "governance": {
+    "data_classification": "internal",
+    "human_approval_required": false,
+    "audit_level": "standard"
+  },
+  "required_env": [],
+  "optional_env": ["LOKI_URL"],
+  "min_platform_version": "2.0.0"
+}

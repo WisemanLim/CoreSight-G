@@ -1,0 +1,40 @@
+{
+  "agent_type": "monitoring",
+  "version": "1.0.0",
+  "display_name": "트레이스 분석 Agent",
+  "description": "Jaeger 에서 OTel 분산 트레이스를 조회해 수집 파이프라인 병목·오류를 분석하는 관제 Agent입니다",
+  "capabilities": [
+    {
+      "verb": "trace_analysis",
+      "domain": "observability.traces",
+      "description": "계측 서비스 목록(list_services)·트레이스 요약 조회(search_traces) (read-only)",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "tool_name": {"type": "string", "enum": ["list_services", "search_traces"]},
+          "arguments": {"type": "object"}
+        },
+        "required": ["tool_name"]
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "result": {"type": "object"}
+        }
+      },
+      "qos": {
+        "max_latency_ms": 10000,
+        "supports_async": false,
+        "supports_streaming": false
+      }
+    }
+  ],
+  "governance": {
+    "data_classification": "internal",
+    "human_approval_required": false,
+    "audit_level": "standard"
+  },
+  "required_env": [],
+  "optional_env": ["JAEGER_URL"],
+  "min_platform_version": "2.0.0"
+}
